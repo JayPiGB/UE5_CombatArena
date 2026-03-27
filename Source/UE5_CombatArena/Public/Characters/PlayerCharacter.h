@@ -21,6 +21,13 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	void SetOverlappingItem(AItem* Item);
+
+	UFUNCTION(BlueprintCallable)
+	void AttackEnd();
+
+	UFUNCTION(BlueprintCallable)
+	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -34,6 +41,9 @@ private:
 	UPROPERTY(VisibleInstanceOnly)
 	AItem* OverlappingItem;
 
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
+	UAnimMontage* AttackMontage;
+
 	void MoveForward(float Value);
 
 	void MoveRight(float Value);
@@ -43,6 +53,10 @@ private:
 	void Turn(float Value);
 
 	void EquipOneHanded();
+
+	void Attack();
+
+	void PlayAttackMontage();
 
 	ECharacterEquipState EquipState;
 

@@ -7,6 +7,7 @@ AItem::AItem() : runningTime(0.0f), hoverAmplitude(2.0f)
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
 	SetRootComponent(Mesh);
+	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("ItemSphere"));
 	Sphere->SetupAttachment(GetRootComponent());

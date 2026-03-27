@@ -4,6 +4,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Items/Item.h"
 #include "Items/Weapons/Weapon.h"
+#include "Animation/AnimMontage.h"
+#include "Components/BoxComponent.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -49,6 +51,41 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction(FName("Jump"),EInputEvent::IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction(FName("EquipOneHanded"), EInputEvent::IE_Pressed, this, &APlayerCharacter::EquipOneHanded);
+	PlayerInputComponent->BindAction(FName("Attack"), EInputEvent::IE_Pressed, this, &APlayerCharacter::Attack);
+}
+
+void APlayerCharacter::Attack()
+{
+	if (GEngine) GEngine->AddOnScreenDebugMessage(0, 2.0f, FColor::Yellow, "Attack");
+	if (CanAttack())
+	{
+		ActionState = ECharacterActionState::ECAS_Attacking;
+		PlayAttackMontage();
+	}
+}
+
+void APlayerCharacter::PlayAttackMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && AttackMontage)
+	{
+		AnimInstance->Montage_Play(AttackMontage);
+		const int32 Selection = FMath::RandRange(0, 1);
+		FName SectionName = FName();
+		switch (Selection)
+		{
+		case 0:
+			SectionName = FName("Attack 1");
+			break;
+		case 1:
+			SectionName = FName("Attack 2");
+			break;
+		default:
+			break;
+		}
+
+		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
+	}
 }
 
 void APlayerCharacter::SetOverlappingItem(AItem* Item)
@@ -61,6 +98,28 @@ void APlayerCharacter::SetOverlappingItem(AItem* Item)
 			FString debugMessage("Overlapping item set to: ");
 			debugMessage = debugMessage + Item->GetName();
 			GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Cyan, debugMessage);
+		}
+	}
+}
+
+void APlayerCharacter::AttackEnd()
+{
+	if (ActionState == ECharacterActionState::ECAS_Attacking)
+	{
+		ActionState = ECharacterActionState::ECAS_Unoccupied;
+	}
+}
+
+void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled)
+{
+	AWeapon* EquippedWeapon = Cast<AWeapon>(OverlappingItem);
+	if (EquippedWeapon)
+	{
+		UBoxComponent* WeaponBox = EquippedWeapon->GetWeaponBox();
+		if (WeaponBox)
+		{
+			WeaponBox->SetCollisionEnabled(CollisionEnabled);
+			UE_LOG(LogTemp, Warning, TEXT("Weapon collision enabled: %d"), WeaponBox->GetCollisionEnabled());
 		}
 	}
 }
@@ -81,6 +140,7 @@ void APlayerCharacter::EquipOneHanded()
 	if (Weapon)
 	{
 		Weapon->Equip(GetMesh(), FName("RightHandSocket"));
+		EquipState = ECharacterEquipState::ECES_EquippedOneHandedWeapon;
 	}
 }
 
@@ -97,6 +157,8 @@ bool APlayerCharacter::CanMove() const
 
 void APlayerCharacter::MoveForward(float Value)
 {
+	if (!CanMove()) { return; }
+
 	if (Controller && (Value != 0.0f))
 	{
 		const FRotator ControlRotation = GetControlRotation();
@@ -109,6 +171,8 @@ void APlayerCharacter::MoveForward(float Value)
 
 void APlayerCharacter::MoveRight(float Value)
 {
+	if (!CanMove()) { return; }
+
 	if (Controller && (Value != 0.0f))
 	{
 		const FRotator controllerRotation = GetControlRotation();
