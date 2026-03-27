@@ -24,7 +24,7 @@ void AItem::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 {
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(0, 30.0f, FColor::Red, TEXT("Began Overlapped with ") + OtherActor->GetName());
+		GEngine->AddOnScreenDebugMessage(0, 2.0f, FColor::Green, TEXT("Began Overlapped with ") + OtherActor->GetName());
 	}
 }
 
@@ -32,7 +32,7 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 {
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(0, 30.0f, FColor::Red, TEXT("Ended Overlapped with ") + OtherActor->GetName());
+		GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Red, TEXT("Ended Overlapped with ") + OtherActor->GetName());
 	}
 }
 
