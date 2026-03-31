@@ -37,13 +37,13 @@ protected:
 
 	EItemState State = EItemState::EIS_Hovering;
 
+	UPROPERTY(VisibleAnywhere)
+	USphereComponent* Sphere;
+
 private:
 	float GetHoverOffset(float DeltaTime) const;
 
 	float runningTime;
 
 	float hoverAmplitude;
-
-	UPROPERTY(VisibleAnywhere)
-	USphereComponent* Sphere;
 };

@@ -119,7 +119,6 @@ void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Collisi
 		if (WeaponBox)
 		{
 			WeaponBox->SetCollisionEnabled(CollisionEnabled);
-			UE_LOG(LogTemp, Warning, TEXT("Weapon collision enabled: %d"), WeaponBox->GetCollisionEnabled());
 		}
 	}
 }
