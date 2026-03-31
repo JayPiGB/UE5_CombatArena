@@ -28,6 +28,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled);
 
+	FORCEINLINE ECharacterEquipState GetCharacterEquipState() const;
+
 protected:
 	virtual void BeginPlay() override;
 

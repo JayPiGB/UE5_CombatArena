@@ -54,6 +54,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction(FName("Attack"), EInputEvent::IE_Pressed, this, &APlayerCharacter::Attack);
 }
 
+
+
 void APlayerCharacter::Attack()
 {
 	if (GEngine) GEngine->AddOnScreenDebugMessage(0, 2.0f, FColor::Yellow, "Attack");
@@ -121,6 +123,11 @@ void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Collisi
 			WeaponBox->SetCollisionEnabled(CollisionEnabled);
 		}
 	}
+}
+
+ECharacterEquipState APlayerCharacter::GetCharacterEquipState() const
+{
+	return EquipState;
 }
 
 void APlayerCharacter::LookUp(float Value)
