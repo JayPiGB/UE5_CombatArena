@@ -1,6 +1,8 @@
 #include "Characters/Enemy/Enemy.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/HealthComponent.h"
+#include "HUD/HealthBarComponent.h"
 
 AEnemy::AEnemy()
 {
@@ -9,16 +11,24 @@ AEnemy::AEnemy()
 	USkeletalMeshComponent* SkeletalMesh = GetMesh();
 	SkeletalMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 	SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
-	SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Block);
+	SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	SkeletalMesh->SetGenerateOverlapEvents(true);
 
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Block);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
+	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
+	HealthBarWidget->SetupAttachment(GetRootComponent());
 }
 
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->SetHealthPercent(0.5f);
+	}
 }
 
 void AEnemy::Tick(float DeltaTime)

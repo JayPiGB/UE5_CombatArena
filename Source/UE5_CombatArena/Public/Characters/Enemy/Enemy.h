@@ -4,6 +4,9 @@
 #include "GameFramework/Character.h"
 #include "Enemy.generated.h"
 
+class UHealthComponent;
+class UHealthBarComponent;
+
 UCLASS()
 class UE5_COMBATARENA_API AEnemy : public ACharacter
 {
@@ -18,4 +21,11 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+private:
+	UPROPERTY(VisibleAnywhere)
+	UHealthComponent* HealthComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	UHealthBarComponent* HealthBarWidget;
 };
