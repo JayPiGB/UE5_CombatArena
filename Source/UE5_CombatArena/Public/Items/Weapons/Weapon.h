@@ -17,7 +17,7 @@ class UE5_COMBATARENA_API AWeapon : public AItem
 public:
 	AWeapon();
 
-	void Equip(USceneComponent* Parent, FName SocketName);
+	void Equip(USceneComponent* Parent, FName SocketName, AActor* NewOwner, APawn* NewInstigator);
 	
 protected:
 	virtual void BeginPlay() override;
@@ -37,6 +37,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* BoxTraceEnd;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	float Damage = 20.0f;
 
 public:
 	FORCEINLINE UBoxComponent* GetWeaponBox() const { return WeaponBox; }

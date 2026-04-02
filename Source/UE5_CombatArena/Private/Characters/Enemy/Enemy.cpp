@@ -25,9 +25,9 @@ void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (HealthBarWidget)
+	if (HealthComponent && HealthBarWidget)
 	{
-		HealthBarWidget->SetHealthPercent(0.5f);
+		HealthBarWidget->SetHealthPercent(HealthComponent->GetHealthPercent());
 	}
 }
 
@@ -41,5 +41,16 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (HealthComponent && HealthBarWidget)
+	{
+		HealthComponent->ReceiveDamage(DamageAmount);
+
+		HealthBarWidget->SetHealthPercent(HealthComponent->GetHealthPercent());
+	}
+	return DamageAmount;
 }
 

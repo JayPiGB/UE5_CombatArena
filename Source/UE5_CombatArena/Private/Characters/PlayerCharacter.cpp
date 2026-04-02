@@ -145,7 +145,7 @@ void APlayerCharacter::EquipOneHanded()
 	AWeapon* Weapon = Cast<AWeapon>(OverlappingItem);
 	if (Weapon)
 	{
-		Weapon->Equip(GetMesh(), FName("RightHandSocket"));
+		Weapon->Equip(GetMesh(), FName("RightHandSocket"), this, this);
 		EquipState = ECharacterEquipState::ECES_EquippedOneHandedWeapon;
 	}
 }
