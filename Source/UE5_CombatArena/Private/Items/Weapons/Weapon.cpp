@@ -4,6 +4,7 @@
 #include "Components/SphereComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Interfaces/HitInterface.h"
 
 AWeapon::AWeapon()
 {
@@ -20,6 +21,7 @@ AWeapon::AWeapon()
 	BoxTraceEnd->SetupAttachment(RootComponent);
 
 	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	Sphere->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 }
 
@@ -44,7 +46,7 @@ void AWeapon::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	Super::OnSphereBeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 
 	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(OtherActor);
-	if (PlayerCharacter)
+	if (PlayerCharacter && PlayerCharacter->GetCharacterEquipState() == ECharacterEquipState::ECES_Unequipped)
 	{
 		PlayerCharacter->SetOverlappingItem(this);
 	}
@@ -90,6 +92,12 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 
 	if (BoxHitResult.GetActor())
 	{
+		IHitInterface* Hittable = Cast<IHitInterface>(BoxHitResult.GetActor());
+		if (Hittable)
+		{
+			Hittable->GetHit(BoxHitResult.ImpactPoint);
+		}
+
 		UGameplayStatics::ApplyDamage(
 			BoxHitResult.GetActor(),
 			Damage,

@@ -99,7 +99,7 @@ void APlayerCharacter::SetOverlappingItem(AItem* Item)
 		{
 			FString debugMessage("Overlapping item set to: ");
 			debugMessage = debugMessage + Item->GetName();
-			GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Cyan, debugMessage);
+			GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Cyan, debugMessage);
 		}
 	}
 }
