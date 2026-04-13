@@ -27,4 +27,6 @@ private:
 public:
 	FORCEINLINE float GetHealthPercent();
 	void ReceiveDamage(float Damage);
+
+	bool IsAlive();
 };

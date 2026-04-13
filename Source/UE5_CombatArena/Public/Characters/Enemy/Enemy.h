@@ -28,6 +28,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	void Die();
+
 	void PlayHitReactMontage(const FName& SectionName);
 
 	void DirectionalHitReact(const FVector& ImpactPoint);
@@ -41,4 +43,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	UAnimMontage* HitReactMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
+	UAnimMontage* DeathMontage;
 };

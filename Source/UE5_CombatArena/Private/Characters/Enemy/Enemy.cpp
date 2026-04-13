@@ -33,6 +33,19 @@ void AEnemy::BeginPlay()
 	}
 }
 
+void AEnemy::Die()
+{
+	int32 sectionID = FMath::RandRange(1, 4);
+	FName sectionName("Death" + FString::FromInt(sectionID));
+	UE_LOG(LogTemp, Warning, TEXT("Death section to play: %s"), *sectionName.ToString());
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && DeathMontage)
+	{
+		AnimInstance->Montage_Play(DeathMontage);
+		AnimInstance->Montage_JumpToSection(sectionName, DeathMontage);
+	}
+}
+
 void AEnemy::PlayHitReactMontage(const FName& SectionName)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -68,9 +81,14 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 
 void AEnemy::GetHit(const FVector& ImpactPoint)
 {
-	DRAW_SPHERE_TEMPORARY(ImpactPoint, FColor::Blue);
-
-	DirectionalHitReact(ImpactPoint);
+	if (HealthComponent && HealthComponent->IsAlive())
+	{
+		DirectionalHitReact(ImpactPoint);
+	}
+	else
+	{
+		Die();
+	}
 }
 
 void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)

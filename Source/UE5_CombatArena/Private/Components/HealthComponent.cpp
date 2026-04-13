@@ -16,6 +16,11 @@ float UHealthComponent::GetHealthPercent()
 	return Health / MaxHealth;
 }
 
+bool UHealthComponent::IsAlive()
+{
+	return Health > 0.f;
+}
+
 void UHealthComponent::ReceiveDamage(float Damage)
 {
 	Health = FMath::Clamp(Health - Damage, 0.0, MaxHealth);
