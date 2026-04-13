@@ -30,6 +30,8 @@ protected:
 
 	void PlayHitReactMontage(const FName& SectionName);
 
+	void DirectionalHitReact(const FVector& ImpactPoint);
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	UHealthComponent* HealthComponent;

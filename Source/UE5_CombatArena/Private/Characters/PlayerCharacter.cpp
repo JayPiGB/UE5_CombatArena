@@ -122,6 +122,8 @@ void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Collisi
 		{
 			WeaponBox->SetCollisionEnabled(CollisionEnabled);
 		}
+
+		EquippedWeapon->IgnoreActors.Empty();
 	}
 }
 
