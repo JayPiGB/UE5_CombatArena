@@ -72,7 +72,7 @@ void APlayerCharacter::PlayAttackMontage()
 	if (AnimInstance && AttackMontage)
 	{
 		AnimInstance->Montage_Play(AttackMontage);
-		const int32 Selection = FMath::RandRange(0, 1);
+		/*const int32 Selection = FMath::RandRange(0, 1);
 		FName SectionName = FName();
 		switch (Selection)
 		{
@@ -84,9 +84,9 @@ void APlayerCharacter::PlayAttackMontage()
 			break;
 		default:
 			break;
-		}
+		}*/
 
-		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
+		AnimInstance->Montage_JumpToSection(FName("Attack 1"), AttackMontage);
 	}
 }
 
@@ -114,17 +114,21 @@ void APlayerCharacter::AttackEnd()
 
 void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled)
 {
+	UE_LOG(LogTemp, Warning, TEXT("set Collision Enabled called"));
 	AWeapon* EquippedWeapon = Cast<AWeapon>(OverlappingItem);
 	if (EquippedWeapon)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Equipped Weapon verified"));
 		UBoxComponent* WeaponBox = EquippedWeapon->GetWeaponBox();
 		if (WeaponBox)
 		{
 			WeaponBox->SetCollisionEnabled(CollisionEnabled);
+			UE_LOG(LogTemp, Warning, TEXT("Collision Enabled set to: %d"), WeaponBox->GetCollisionEnabled());
 		}
 
 		EquippedWeapon->IgnoreActors.Empty();
 	}
+
 }
 
 ECharacterEquipState APlayerCharacter::GetCharacterEquipState() const
