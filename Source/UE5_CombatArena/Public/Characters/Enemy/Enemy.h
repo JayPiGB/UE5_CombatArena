@@ -9,6 +9,7 @@
 class UHealthComponent;
 class UHealthBarComponent;
 class UAnimMontage;
+class UStaggerComponent;
 
 UCLASS()
 class UE5_COMBATARENA_API AEnemy : public ACharacter, public IHitInterface
@@ -45,6 +46,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UHealthBarComponent* HealthBarWidget;
+
+	UPROPERTY(VisibleAnywhere)
+	UStaggerComponent* StaggerComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	UAnimMontage* HitReactMontage;

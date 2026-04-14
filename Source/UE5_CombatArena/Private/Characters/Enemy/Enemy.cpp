@@ -2,6 +2,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/HealthComponent.h"
+#include "Components/StaggerComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "UE5_CombatArena/DebugMacros.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -21,6 +22,8 @@ AEnemy::AEnemy()
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
 	HealthBarWidget->SetupAttachment(GetRootComponent());
+
+	StaggerComponent = CreateDefaultSubobject<UStaggerComponent>(TEXT("Stagger"));
 }
 
 void AEnemy::BeginPlay()
@@ -122,6 +125,11 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 		HealthBarWidget->SetHealthPercent(HealthComponent->GetHealthPercent());
 	}
 
+	if (StaggerComponent)
+	{
+		StaggerComponent->ReceiveDamage(DamageAmount);
+	}
+
 	return DamageAmount;
 }
 
@@ -131,13 +139,17 @@ void AEnemy::GetHit(const FVector& ImpactPoint)
 	{
 		HealthBarWidget->SetVisibility(true);
 	}
-	if (HealthComponent && HealthComponent->IsAlive())
+	if (HealthComponent)
 	{
-		DirectionalHitReact(ImpactPoint);
-	}
-	else
-	{
-		Die();
+		if (!HealthComponent->IsAlive())
+		{
+			Die();
+		}
+		else if (StaggerComponent && StaggerComponent->IsStaggered())
+		{
+			DirectionalHitReact(ImpactPoint);
+			StaggerComponent->ResetStaggerBar();
+		}
 	}
 }
 
@@ -164,16 +176,5 @@ void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
 	else if (angle >= -135.f && angle < -45.f) { section = FName("FromLeft"); }
 	else if (angle >= 45.f && angle < 135.f) { section = FName("FromRight"); }
 	PlayHitReactMontage(section);
-
-
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + crossProduct * 100.f, 5.f, FColor::Blue, 5.f);
-
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Green, FString::Printf(TEXT("Angle: %f"), angle));
-	}
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + forward * 60.f, 5.f, FColor::Red, 5.f);
-
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + toHit * 60.f, 5.f, FColor::Green, 5.f);
 }
 

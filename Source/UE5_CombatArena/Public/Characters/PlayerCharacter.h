@@ -30,6 +30,9 @@ public:
 
 	FORCEINLINE ECharacterEquipState GetCharacterEquipState() const;
 
+	UFUNCTION(BlueprintCallable)
+	void SetOnComboWindow(bool Value);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -66,4 +69,6 @@ private:
 
 	FORCEINLINE bool CanAttack() const;
 	FORCEINLINE bool CanMove() const;
+
+	bool OnComboWindow = false;
 };

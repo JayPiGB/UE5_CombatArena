@@ -72,21 +72,17 @@ void APlayerCharacter::PlayAttackMontage()
 	if (AnimInstance && AttackMontage)
 	{
 		AnimInstance->Montage_Play(AttackMontage);
-		/*const int32 Selection = FMath::RandRange(0, 1);
-		FName SectionName = FName();
-		switch (Selection)
-		{
-		case 0:
-			SectionName = FName("Attack 1");
-			break;
-		case 1:
-			SectionName = FName("Attack 2");
-			break;
-		default:
-			break;
-		}*/
 
-		AnimInstance->Montage_JumpToSection(FName("Attack 1"), AttackMontage);
+		if (OnComboWindow)
+		{
+			AnimInstance->Montage_JumpToSection(FName("Attack 2"), AttackMontage);
+		}
+		else
+		{
+			OnComboWindow = false;
+			AnimInstance->Montage_JumpToSection(FName("Attack 1"), AttackMontage);
+		}
+
 	}
 }
 
@@ -136,6 +132,11 @@ ECharacterEquipState APlayerCharacter::GetCharacterEquipState() const
 	return EquipState;
 }
 
+void APlayerCharacter::SetOnComboWindow(bool Value)
+{
+	OnComboWindow = Value;
+}
+
 void APlayerCharacter::LookUp(float Value)
 {
 	AddControllerPitchInput(Value);
@@ -159,7 +160,7 @@ void APlayerCharacter::EquipOneHanded()
 bool APlayerCharacter::CanAttack() const
 {
 	return (EquipState == ECharacterEquipState::ECES_EquippedOneHandedWeapon || EquipState == ECharacterEquipState::ECES_EquippedTwoHandedWeapon)
-			&& ActionState == ECharacterActionState::ECAS_Unoccupied;
+			&& (ActionState == ECharacterActionState::ECAS_Unoccupied || OnComboWindow);
 }
 
 bool APlayerCharacter::CanMove() const
