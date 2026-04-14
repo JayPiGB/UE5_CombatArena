@@ -30,19 +30,50 @@ void AEnemy::BeginPlay()
 	if (HealthComponent && HealthBarWidget)
 	{
 		HealthBarWidget->SetHealthPercent(HealthComponent->GetHealthPercent());
+		HealthBarWidget->SetVisibility(false);
 	}
 }
 
 void AEnemy::Die()
 {
-	int32 sectionID = FMath::RandRange(1, 4);
-	FName sectionName("Death" + FString::FromInt(sectionID));
-	UE_LOG(LogTemp, Warning, TEXT("Death section to play: %s"), *sectionName.ToString());
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && DeathMontage)
 	{
+		int32 sectionID = FMath::RandRange(1, 4);
+		FName sectionName{};
+		switch (sectionID)
+		{
+		case 1:
+			sectionName = FName("Death1");
+			DeathPose = EDeathPose::EDP_Death1;
+			break;
+		case 2:
+			sectionName = FName("Death2");
+			DeathPose = EDeathPose::EDP_Death2;
+			break;
+		case 3:
+			sectionName = FName("Death3");
+			DeathPose = EDeathPose::EDP_Death3;
+			break;
+		case 4:
+			sectionName = FName("Death4");
+			DeathPose = EDeathPose::EDP_Death4;
+		default:
+			DeathPose = EDeathPose::EDP_Alive;
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("Death section to play: %s"), *sectionName.ToString());
+
 		AnimInstance->Montage_Play(DeathMontage);
 		AnimInstance->Montage_JumpToSection(sectionName, DeathMontage);
+	}
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SetLifeSpan(3.f);
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->SetVisibility(false);
 	}
 }
 
@@ -60,6 +91,18 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (CombatTarget)
+	{
+		const double distanceToTarget = (CombatTarget->GetActorLocation() - GetActorLocation()).Length();
+		if (distanceToTarget > CombatRadius)
+		{
+			if (HealthBarWidget)
+			{
+				HealthBarWidget->SetVisibility(false);
+			}
+			CombatTarget = nullptr;
+		}
+	}
 }
 
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -70,17 +113,24 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	CombatTarget = EventInstigator->GetPawn();
+
 	if (HealthComponent && HealthBarWidget)
 	{
 		HealthComponent->ReceiveDamage(DamageAmount);
 
 		HealthBarWidget->SetHealthPercent(HealthComponent->GetHealthPercent());
 	}
+
 	return DamageAmount;
 }
 
 void AEnemy::GetHit(const FVector& ImpactPoint)
 {
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->SetVisibility(true);
+	}
 	if (HealthComponent && HealthComponent->IsAlive())
 	{
 		DirectionalHitReact(ImpactPoint);
