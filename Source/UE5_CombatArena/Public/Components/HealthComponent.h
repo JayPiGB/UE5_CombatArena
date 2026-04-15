@@ -25,8 +25,8 @@ private:
 	float MaxHealth;
 
 public:
-	FORCEINLINE float GetHealthPercent();
+	FORCEINLINE float GetHealthPercent() const;
 	void ReceiveDamage(float Damage);
 
-	bool IsAlive();
+	bool IsAlive() const;
 };

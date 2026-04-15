@@ -7,6 +7,7 @@
 #include "Animation/AnimMontage.h"
 #include "Components/BoxComponent.h"
 #include "Components/HealthComponent.h"
+#include "Components/StaminaComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "HUD/GameHUD.h"
 #include "HUD/PlayerHUD.h"
@@ -32,7 +33,7 @@ APlayerCharacter::APlayerCharacter()
 	ActionState = ECharacterActionState::ECAS_Unoccupied;
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
-	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
+	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina"));
 }
 
 void APlayerCharacter::BeginPlay()
@@ -45,11 +46,11 @@ void APlayerCharacter::BeginPlay()
 		AGameHUD* gameHUD = Cast<AGameHUD>(playerController->GetHUD());
 		if (gameHUD)
 		{
-			UPlayerHUD* playerHUD = gameHUD->GetPlayerHUD();
-			if (playerHUD)
+			PlayerHUD = gameHUD->GetPlayerHUD();
+			if (PlayerHUD)
 			{
-				playerHUD->SetHealthPercent(0.0f);
-				playerHUD->SetStaminaPercent(0.0f);
+				PlayerHUD->SetHealthPercent(HealthComponent->GetHealthPercent());
+				PlayerHUD->SetStaminaPercent(StaminaComponent->GetStaminaPercent());
 			}
 		}
 	}
@@ -60,6 +61,10 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (PlayerHUD && StaminaComponent)
+	{
+		PlayerHUD->SetStaminaPercent(StaminaComponent->GetStaminaPercent());
+	}
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -81,9 +86,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::Attack()
 {
 	if (GEngine) GEngine->AddOnScreenDebugMessage(0, 2.0f, FColor::Yellow, "Attack");
-	if (CanAttack())
+
+	const float staminaCost = 20.f;
+	if (CanAttack(staminaCost))
 	{
 		ActionState = ECharacterActionState::ECAS_Attacking;
+		StaminaComponent->SpendStamina(staminaCost);
+		PlayerHUD->SetStaminaPercent(StaminaComponent->GetStaminaPercent());
 		PlayAttackMontage();
 	}
 }
@@ -179,10 +188,11 @@ void APlayerCharacter::EquipOneHanded()
 	}
 }
 
-bool APlayerCharacter::CanAttack() const
+bool APlayerCharacter::CanAttack(float StaminaCost) const
 {
 	return (EquipState == ECharacterEquipState::ECES_EquippedOneHandedWeapon || EquipState == ECharacterEquipState::ECES_EquippedTwoHandedWeapon)
-			&& (ActionState == ECharacterActionState::ECAS_Unoccupied || OnComboWindow);
+			&& (ActionState == ECharacterActionState::ECAS_Unoccupied || OnComboWindow)
+			&& StaminaComponent->CanPerformAction(StaminaCost);
 }
 
 bool APlayerCharacter::CanMove() const

@@ -9,7 +9,9 @@ class UCameraComponent;
 class USpringArmComponent;
 class AItem;
 class UHealthComponent;
-class UHealthBarComponent;
+class UStaminaComponent;
+class UPlayerHUD;
+
 UCLASS()
 class UE5_COMBATARENA_API APlayerCharacter : public ACharacter
 {
@@ -55,7 +57,10 @@ private:
 	UHealthComponent* HealthComponent;
 
 	UPROPERTY(VisibleAnywhere)
-	UHealthBarComponent* HealthBarWidget;
+	UStaminaComponent* StaminaComponent;
+
+	UPlayerHUD* PlayerHUD;
+
 
 	void MoveForward(float Value);
 
@@ -75,7 +80,7 @@ private:
 
 	ECharacterActionState ActionState;
 
-	FORCEINLINE bool CanAttack() const;
+	FORCEINLINE bool CanAttack(float StaminaCost) const;
 	FORCEINLINE bool CanMove() const;
 
 	bool OnComboWindow = false;

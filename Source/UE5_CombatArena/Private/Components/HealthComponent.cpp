@@ -1,6 +1,8 @@
 #include "Components/HealthComponent.h"
 
-UHealthComponent::UHealthComponent() : Health(100.0f), MaxHealth(100.0f)
+UHealthComponent::UHealthComponent() :
+	Health(100.0f),
+	MaxHealth(100.0f)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -11,12 +13,12 @@ void UHealthComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-float UHealthComponent::GetHealthPercent()
+float UHealthComponent::GetHealthPercent() const
 {
 	return Health / MaxHealth;
 }
 
-bool UHealthComponent::IsAlive()
+bool UHealthComponent::IsAlive() const
 {
 	return Health > 0.f;
 }
