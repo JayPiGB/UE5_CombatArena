@@ -8,6 +8,8 @@
 class UCameraComponent;
 class USpringArmComponent;
 class AItem;
+class UHealthComponent;
+class UHealthBarComponent;
 UCLASS()
 class UE5_COMBATARENA_API APlayerCharacter : public ACharacter
 {
@@ -48,6 +50,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	UAnimMontage* AttackMontage;
+
+	UPROPERTY(VisibleAnywhere)
+	UHealthComponent* HealthComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	UHealthBarComponent* HealthBarWidget;
 
 	void MoveForward(float Value);
 

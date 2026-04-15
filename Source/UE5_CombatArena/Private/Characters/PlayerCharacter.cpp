@@ -6,6 +6,10 @@
 #include "Items/Weapons/Weapon.h"
 #include "Animation/AnimMontage.h"
 #include "Components/BoxComponent.h"
+#include "Components/HealthComponent.h"
+#include "HUD/HealthBarComponent.h"
+#include "HUD/GameHUD.h"
+#include "HUD/PlayerHUD.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -26,11 +30,29 @@ APlayerCharacter::APlayerCharacter()
 	OverlappingItem = nullptr;
 	EquipState = ECharacterEquipState::ECES_Unequipped;
 	ActionState = ECharacterActionState::ECAS_Unoccupied;
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
+	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
 }
 
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	APlayerController* playerController = Cast<APlayerController>(GetController());
+	if (playerController)
+	{
+		AGameHUD* gameHUD = Cast<AGameHUD>(playerController->GetHUD());
+		if (gameHUD)
+		{
+			UPlayerHUD* playerHUD = gameHUD->GetPlayerHUD();
+			if (playerHUD)
+			{
+				playerHUD->SetHealthPercent(0.0f);
+				playerHUD->SetStaminaPercent(0.0f);
+			}
+		}
+	}
 	
 }
 
