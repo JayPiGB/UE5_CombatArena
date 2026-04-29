@@ -85,11 +85,19 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::Attack()
 {
-	if (GEngine) GEngine->AddOnScreenDebugMessage(0, 2.0f, FColor::Yellow, "Attack");
+
+	if (OnComboWindow)
+	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Blue, "Combo issued");
+		PerformCombo = true;
+		return;
+	}
 
 	const float staminaCost = 20.f;
 	if (CanAttack(staminaCost))
 	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(0, 2.0f, FColor::Yellow, "Attack");
+
 		ActionState = ECharacterActionState::ECAS_Attacking;
 		StaminaComponent->SpendStamina(staminaCost);
 		PlayerHUD->SetStaminaPercent(StaminaComponent->GetStaminaPercent());
@@ -104,7 +112,7 @@ void APlayerCharacter::PlayAttackMontage()
 	{
 		AnimInstance->Montage_Play(AttackMontage);
 
-		if (OnComboWindow)
+		if (PerformCombo)
 		{
 			AnimInstance->Montage_JumpToSection(FName("Attack 2"), AttackMontage);
 		}
@@ -133,6 +141,11 @@ void APlayerCharacter::SetOverlappingItem(AItem* Item)
 
 void APlayerCharacter::AttackEnd()
 {
+	if (PerformCombo)
+	{
+		Attack();
+		PerformCombo = false;
+	}
 	if (ActionState == ECharacterActionState::ECAS_Attacking)
 	{
 		ActionState = ECharacterActionState::ECAS_Unoccupied;
@@ -191,7 +204,7 @@ void APlayerCharacter::EquipOneHanded()
 bool APlayerCharacter::CanAttack(float StaminaCost) const
 {
 	return (EquipState == ECharacterEquipState::ECES_EquippedOneHandedWeapon || EquipState == ECharacterEquipState::ECES_EquippedTwoHandedWeapon)
-			&& (ActionState == ECharacterActionState::ECAS_Unoccupied || OnComboWindow)
+			&& (ActionState == ECharacterActionState::ECAS_Unoccupied || PerformCombo)
 			&& StaminaComponent->CanPerformAction(StaminaCost);
 }
 

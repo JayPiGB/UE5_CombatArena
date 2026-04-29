@@ -84,4 +84,6 @@ private:
 	FORCEINLINE bool CanMove() const;
 
 	bool OnComboWindow = false;
+
+	bool PerformCombo = false;
 };
