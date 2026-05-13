@@ -32,6 +32,8 @@ protected:
 
 	void Die();
 
+	bool InTargetRange(AActor* Target, double AcceptanceRadius);
+
 	void PlayHitReactMontage(const FName& SectionName);
 
 	void DirectionalHitReact(const FVector& ImpactPoint);
@@ -62,4 +64,26 @@ private:
 	UPROPERTY(EditAnywhere)
 	double CombatRadius = 500.f;
 
+
+	/*
+		Navigation
+	*/
+	UPROPERTY()
+	class AAIController* EnemyController;
+
+	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
+	AActor* CurrentPatrolTarget;
+
+	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
+	TArray<AActor*> PatrolTargets;
+
+	UPROPERTY(EditAnywhere, Category = "AI Navigation")
+	double PatrolRadius = 200.f;
+
+	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
+	float IdlePatrolTimeout = 2.f;
+
+	float IdlePatrolTimer = 0.f;
+
+	bool WaitingAtPatrolTarget = false;
 };

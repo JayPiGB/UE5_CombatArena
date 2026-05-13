@@ -3,9 +3,15 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/StaggerComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "UE5_CombatArena/DebugMacros.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "AIController.h"
+#include "NavigationSystemTypes.h"
+#include "NavigationSystem.h"
+#include "Navigation/PathFollowingComponent.h"
+#include <Engine/TargetPoint.h>
 
 AEnemy::AEnemy()
 {
@@ -24,6 +30,12 @@ AEnemy::AEnemy()
 	HealthBarWidget->SetupAttachment(GetRootComponent());
 
 	StaggerComponent = CreateDefaultSubobject<UStaggerComponent>(TEXT("Stagger"));
+
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+
 }
 
 void AEnemy::BeginPlay()
@@ -34,6 +46,31 @@ void AEnemy::BeginPlay()
 	{
 		HealthBarWidget->SetHealthPercent(HealthComponent->GetHealthPercent());
 		HealthBarWidget->SetVisibility(false);
+	}
+
+	EnemyController = Cast<AAIController>(GetController());
+
+	if (EnemyController && CurrentPatrolTarget)
+	{
+		FActorSpawnParameters SpawnParams{};
+		SpawnParams.Owner = this;
+		ATargetPoint* initialLocationTarget = GetWorld()->SpawnActor<ATargetPoint>(this->GetActorLocation(), this->GetActorRotation(), SpawnParams);
+		PatrolTargets.Add(initialLocationTarget);
+
+		FAIMoveRequest moveRequest{};
+		moveRequest.SetGoalActor(CurrentPatrolTarget);
+		moveRequest.SetAcceptanceRadius(15.f);
+
+		FNavPathSharedPtr navPath{};
+
+		EnemyController->MoveTo(moveRequest, &navPath);
+		TArray<FNavPathPoint>& pathPoints = navPath->GetPathPoints();
+		for (auto point : pathPoints)
+		{
+			const FVector& location = point.Location;
+			DrawDebugSphere(GetWorld(), location, 12.f, 12, FColor::Green, false, 10.f);
+		}
+
 	}
 }
 
@@ -80,6 +117,20 @@ void AEnemy::Die()
 	}
 }
 
+bool AEnemy::InTargetRange(AActor* Target, double AcceptanceRadius)
+{
+	if (Target)
+	{
+		const double distance = (Target->GetActorLocation() - this->GetActorLocation()).Size();
+		DRAW_SPHERE_SingeFrame(GetActorLocation());
+		DRAW_SPHERE_SingeFrame(Target->GetActorLocation());
+
+		return AcceptanceRadius >= distance;
+	}
+
+	return false;
+}
+
 void AEnemy::PlayHitReactMontage(const FName& SectionName)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -96,14 +147,62 @@ void AEnemy::Tick(float DeltaTime)
 
 	if (CombatTarget)
 	{
-		const double distanceToTarget = (CombatTarget->GetActorLocation() - GetActorLocation()).Length();
-		if (distanceToTarget > CombatRadius)
+		if (!InTargetRange(CombatTarget, CombatRadius))
 		{
 			if (HealthBarWidget)
 			{
 				HealthBarWidget->SetVisibility(false);
 			}
 			CombatTarget = nullptr;
+		}
+	}
+
+	if (CurrentPatrolTarget && EnemyController)
+	{
+		if (InTargetRange(CurrentPatrolTarget, PatrolRadius))
+		{
+			if (!WaitingAtPatrolTarget)
+			{
+				WaitingAtPatrolTarget = true;
+				IdlePatrolTimer = 0.f;
+
+				return;
+			}
+
+			if (WaitingAtPatrolTarget)
+			{
+				if (IdlePatrolTimer >= IdlePatrolTimeout)
+				{
+					IdlePatrolTimer = 0.f;
+					WaitingAtPatrolTarget = false;
+				}
+				else
+				{
+					IdlePatrolTimer += DeltaTime;
+					return;
+				}
+			}
+
+			if (PatrolTargets.Num() > 0)
+			{
+				TArray<AActor*> validTargets{};
+				for (AActor* target : PatrolTargets)
+				{
+					if (target != CurrentPatrolTarget)
+					{
+						validTargets.AddUnique(target);
+					}
+				}
+
+				const int32 targetIndex = FMath::RandRange(0, validTargets.Num() - 1);
+				CurrentPatrolTarget = validTargets[targetIndex];
+
+				FAIMoveRequest moveRequest{};
+				moveRequest.SetGoalActor(CurrentPatrolTarget);
+				moveRequest.SetAcceptanceRadius(15.f);
+
+				EnemyController->MoveTo(moveRequest);
+			}
 		}
 	}
 }
@@ -177,4 +276,3 @@ void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
 	else if (angle >= 45.f && angle < 135.f) { section = FName("FromRight"); }
 	PlayHitReactMontage(section);
 }
-
