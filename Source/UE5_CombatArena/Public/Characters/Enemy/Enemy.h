@@ -34,6 +34,10 @@ protected:
 
 	bool InTargetRange(AActor* Target, double AcceptanceRadius);
 
+	void MoveToTarget(AActor* Target);
+
+	AActor* ChoosePatrolTarget();
+
 	void PlayHitReactMontage(const FName& SectionName);
 
 	void DirectionalHitReact(const FVector& ImpactPoint);
@@ -81,9 +85,8 @@ private:
 	double PatrolRadius = 200.f;
 
 	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
-	float IdlePatrolTimeout = 2.f;
+	float IdlePatrolTimeout = 5.f;
 
-	float IdlePatrolTimer = 0.f;
-
-	bool WaitingAtPatrolTarget = false;
+	FTimerHandle PatrolTimer;
+	void PatrolTimerFinished();
 };
